@@ -3,33 +3,29 @@
 #include <iostream>
 #include "Maze.h"
 
-#define TOP		0
-#define LEFT	1
-#define BOTTOM	2
-#define RIGHT	3
-
 // Maze constructor
 Maze::Maze(){
 
+	_verticalness = 50;
 	_width = 10;
 	_height = 10;
 
 	initialise();
 }
 
-int Maze::getNeighboursWithWalls(class Cell *neighbours[], class Cell *aCell){
+int Maze::getNeighboursWithWalls(class Cell *neighbours[], class Cell *cell){
 	int count = 0;
 
 	for (int countColumn = -1; countColumn <= 1; countColumn++){
 		for (int countRow = -1; countRow <= 1; countRow++){
-			if ( (aCell->column() + countColumn < _width) &&
-				 (aCell->row() + countRow < _height) &&
-				 (aCell->column() + countColumn >= 0) &&
-				 (aCell->row() + countRow >= 0) &&
+			if ( (cell->column() + countColumn < _width) &&
+				 (cell->row() + countRow < _height) &&
+				 (cell->column() + countColumn >= 0) &&
+				 (cell->row() + countRow >= 0) &&
 				 ((countRow == 0) || (countColumn == 0)) &&
 				 (countColumn != countRow)){
-					if (_cells[aCell->column() + countColumn][aCell->row() + countRow].hasAllWalls()){
-						neighbours[count] = & _cells[aCell->column() + countColumn][aCell->row() + countRow];
+					if (_cells[cell->column() + countColumn][cell->row() + countRow].hasAllWalls()){
+						neighbours[count] = & _cells[cell->column() + countColumn][cell->row() + countRow];
 						count++;
 				}
 			}
@@ -69,7 +65,9 @@ void Maze::generate(){
 		if (count > 0){
 
 			// yes, choose one of them, and knock down the wall between it and the current cell
-			int randomCell = int(count * (rand() / (RAND_MAX + 1.0)));
+			//int randomCell = int(count * (rand() / (RAND_MAX + 1.0)));
+			int randomCell = getRandomCell(_currentCell, adjacentCells, count);
+
 			class Cell* theCell = adjacentCells[randomCell];
 			_currentCell->knockDownWall(theCell);
 			_cellStack.push(_currentCell); // push the current cell onto the stack
@@ -82,8 +80,46 @@ void Maze::generate(){
 		}
 	}
 
+	// Open up to left cell
 	_cells[0][0].setWall(TOP, FALSE);
+
+	// Open up bottom right cell
 	_cells[_width-1][_height-1].setWall(BOTTOM, FALSE);
+}
+
+// Retrieve a random cell
+int Maze::getRandomCell( class Cell *currentCell, class Cell *neighbours[], int count){
+	int horizontalNeighbours[2];
+	int verticalNeighbours[2];
+
+	int horizontalCount = 0;
+	int verticalCount = 0;
+
+	// Put horizontal and vertical cell indexes into 2 buckets
+	for (int c = 0; c < count; c++){
+		if (neighbours[c]->column() == currentCell->column()){
+			verticalNeighbours[verticalCount] = c;
+			verticalCount++;
+		}
+		else{
+			horizontalNeighbours[horizontalCount] = c;
+			horizontalCount++;
+		}
+	}
+
+	// Decide if we're gonna go horizontal or vertical
+	if (rand() % 100 >= _verticalness){
+		if (horizontalCount > 0)
+			return horizontalNeighbours[rand() % horizontalCount];
+		else
+			return verticalNeighbours[rand() % verticalCount];
+	}
+	else{
+		if (verticalCount > 0)
+			return verticalNeighbours[rand() % verticalCount];
+		else
+			return horizontalNeighbours[rand() % horizontalCount];
+	}
 }
 
 // Width property
@@ -101,6 +137,22 @@ void Maze::setHeight(int h){
 }
 int Maze::height(){
 	return _height;
+}
+
+// Set percentage of the mase being vertial
+//
+// 100 all vertical 
+// 50  even distribution of vertical and horizontal corridoers
+// 0   all horizontal 
+void Maze::setVerticalness(int h){
+	if (h > 100) 
+		h = 100; 
+	else if (h < 0) 
+		h = 0;
+	_verticalness = h;
+}
+int Maze::verticalness(){
+	return _verticalness;
 }
 
 // Draw Maze

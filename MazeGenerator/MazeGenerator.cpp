@@ -6,6 +6,7 @@
 
 #define MAX_LOADSTRING 100
 
+// Create our maze object
 Maze maze;
 
 // Global Variables:
@@ -32,6 +33,7 @@ int APIENTRY _tWinMain(
 	// Initiase our maze
 	maze.setWidth(40);
 	maze.setHeight(20);
+	maze.setVerticalness(100);
 	maze.initialise();
 	maze.generate();
 

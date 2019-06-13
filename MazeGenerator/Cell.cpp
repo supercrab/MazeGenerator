@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "Types.h"
 #include "Cell.h"
 #include "Maze.h"
 
@@ -43,29 +44,29 @@ bool Cell::hasAllWalls(){
 }
 
 // Knock down a wall
-void Cell::knockDownWall(class Cell* theCell){
+void Cell::knockDownWall(class Cell* cell){
 
 	// find adjacent wall
-	int theWallToKnockDown = findAdjacentWall(theCell);
+	int theWallToKnockDown = findAdjacentWall(cell);
 	_walls[theWallToKnockDown] = false;
 	int oppositeWall = (theWallToKnockDown + 2) % 4;
-	theCell->setWall(oppositeWall, false);
+	cell->setWall(oppositeWall, false);
 }
 
 // Find the adjacent wall
-int Cell::findAdjacentWall(class Cell* theCell){
-	if (theCell->column() == _column) {
-		if (theCell->row() < _row)
-			return 0;
+int Cell::findAdjacentWall(class Cell* cell){
+	if (cell->column() == _column) {
+		if (cell->row() < _row)
+			return TOP;
 		else
-			return 2;
+			return BOTTOM;
 	}
 	else {
 		// _rows are the same
-		if (theCell->column() < _column)
-			return 1;
+		if (cell->column() < _column)
+			return LEFT;
 		else
-			return 3;
+			return RIGHT;
 	}
 }
 
